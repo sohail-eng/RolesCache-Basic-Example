@@ -10,20 +10,48 @@ Finally, fill out the runtime complexity for get and set and the overall space u
 class RolesCache:
     def __init__(self, capacity):
         # Add any additional state you may need.
-        pass
+        self.capacity = capacity
+        self.cache = {}
+        self.order = []  # To maintain the order of roles for eviction
 
     def get(self, role):
         # Returns the message corresponding to the last invocation of that role, None if the role does not exist in the cache.
-        pass
+        return self.cache.get(role, None)
 
     def set(self, role, message):
         # Adds the role and its corresponding message to the cache.
         # If the role already exists, only the message is updated. Otherwise, the oldest role is removed to make space.
-        pass
+        if role in self.cache:
+            # Update the message for an existing role
+            self.cache[role] = message
+            # Move the role to the end to mark it as recently used
+            self.order.remove(role)
+            self.order.append(role)
+        else:
+            if len(self.order) >= self.capacity:
+                # Remove the oldest role
+                oldest_role = self.order.pop(0)
+                del self.cache[oldest_role]
+            # Add the new role and its message
+            self.cache[role] = message
+            self.order.append(role)
 
-    def _complexity(self):
+    @classmethod
+    def _complexity(cls):
         return {
-            'get': '',
-            'set': '',
-            'space': ''
+            'get': 'O(1)',  # Dictionary lookup
+            'set': 'O(N)',
+            # In the worst case, we may need to remove from the order list (O(N)) and append to it (O(1))
+            'space': 'O(N)'  # Storing up to k roles
         }
+
+    @classmethod
+    def print_complexity(cls):
+        print("Here is the complexity -> ", cls._complexity())
+
+
+roleCache = RolesCache(5)
+print("Here is Student role -> ", roleCache.get("student"))
+roleCache.set("student", "I'm a good student")
+print("Here is Student role -> ", roleCache.get("student"))
+RolesCache.print_complexity()
